@@ -30,8 +30,6 @@ pylint==2.6.0
 PyNaCl==1.4.0
 pypiwin32==223
 PySimpleGUI==4.38.0
-pyttsx3==2.90
-pywin32==300
 requests==2.25.1
 six==1.15.0
 soupsieve==2.2
