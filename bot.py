@@ -9,11 +9,11 @@ import random
 
 
 
-reddit = praw.Reddit(client_id = "lYjD6I6YFiaLLw",
-                     client_secret = "T8ZS-R8yjfBwvgsFK48di9wPQW3_sA",
-                     username = "prawpythondiscordbot",   
-                     password = "python123",
-                     user_agent = "pythonpraw")
+reddit = praw.Reddit(client_id = "client id",
+                     client_secret = "client secret",
+                     username = "reddit username",   
+                     password = "reddit password",
+                     user_agent = "user agent")
 
 intents = discord.Intents.default()
 intents.members = True
@@ -113,6 +113,15 @@ async def on_message(msg):
                 break
     
     await bot.process_commands(msg)
+    
+@bot.event 
+async def on_command_error(ctx,error):
+    if isinstance(error,commands.MissingPermissions):
+        await ctx.send("Get some perms XD")
+    elif isinstance(error,commands.MissingRequiredArgument):
+        await ctx.send("Use the correct syntax :|")
+    else:
+        raise error
 
 @bot.group(invoke_without_command=True)
 async def help(ctx):
@@ -462,4 +471,4 @@ async def Dm_all(ctx):
     await ctx.send(embed = em)
 
 
-bot.run("ODI3ODYyMjg5NTYxNDE5ODM2.YGhM1g.uXasgrEnGid8inSLbAPvIIu0BbU")
+bot.run("Your bot token")
