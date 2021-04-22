@@ -2,6 +2,8 @@ import asyncio
 import aiofiles
 import discord
 from discord.ext import commands
+import hostbot
+from hostbot import keep_alive
 import asyncio
 import praw
 import random
@@ -471,4 +473,5 @@ async def Dm_all(ctx):
     await ctx.send(embed = em)
 
 
+keep_alive()
 bot.run("Your bot token")
