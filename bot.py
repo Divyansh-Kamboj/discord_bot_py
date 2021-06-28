@@ -2,8 +2,9 @@ import asyncio
 import aiofiles
 import discord
 from discord.ext import commands
-import hostbot
+import hostbot 
 from hostbot import keep_alive
+
 import asyncio
 import praw
 import random
@@ -11,11 +12,11 @@ import random
 
 
 
-reddit = praw.Reddit(client_id = "client id",
-                     client_secret = "client secret",
-                     username = "reddit username",   
-                     password = "reddit password",
-                     user_agent = "user agent")
+reddit = praw.Reddit(client_id = "lYjD6I6YFiaLLw",
+                     client_secret = "T8ZS-R8yjfBwvgsFK48di9wPQW3_sA",
+                     username = "prawpythondiscordbot",   
+                     password = "python123",
+                     user_agent = "pythonpraw")
 
 intents = discord.Intents.default()
 intents.members = True
@@ -65,8 +66,9 @@ async def on_ready():
 
                 except KeyError:
                     bot.warnings[guild.id][member_id] = [1, [(admin_id, reason)]] 
-
+                break 
     print(f"{bot.user.name} is ready.")
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="everyone"))
 
 @bot.event
 async def on_guild_join(guild):
@@ -114,26 +116,16 @@ async def on_message(msg):
                 await msg.delete()
                 break
     
+    if msg.content == "forby":
+        forby = msg.content
+        await msg.channel.send(str(forby+" is gae"))
+
+    if '@' == msg.content[0] and 'e' == msg.content[-1]:
+        em = discord.Embed(title="stop pinging!! :anger:", color=discord.Colour.dark_purple())
+        em.set_image(url='https://media1.tenor.com/images/13cf3dabb07b449ac3a2fbddc34d51dd/tenor.gif?itemid=16343688')
+        await msg.channel.send(embed = em)
+
     await bot.process_commands(msg)
-    
-@bot.event 
-async def on_command_error(ctx,error):
-    if isinstance(error,commands.MissingPermissions):
-        await ctx.send("Get some perms XD")
-    elif isinstance(error,commands.MissingRequiredArgument):
-        await ctx.send("Use the correct syntax :|")
-    else:
-        raise error
-
-@bot.group(invoke_without_command=True)
-async def help(ctx):
-    em = discord.Embed(title = "Help", description = "Use .help <command> for more information on the command!",color = ctx.author.color )
-
-    em.add_field(name = "Moderation", value = "kick,ban,warn,unmute,mute,configure_ticket, warnings,clear,unban")
-    em.add_field(name = "Miscellaneous", value = "whois,expose,dm,dm_all,meme")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em)
 
 
 
@@ -143,7 +135,7 @@ async def configure_ticket(ctx, msg: discord.Message=None, category: discord.Cat
         await ctx.channel.send("Failed to configure the ticket as an argument was not given or was invalid.")
         return
 
-    bot.ticket_configs[ctx.guild.id] = [msg.id, msg.channel.id, category.id] # this resets the configuration
+    bot.ticket_configs[ctx.guild.id] = [msg.id, msg.channel.id, category.id] 
 
     async with aiofiles.open("ticket_configs.txt", mode="r") as file:
         data = await file.readlines()
@@ -167,7 +159,7 @@ async def ticket_config(ctx):
         await ctx.channel.send("You have not configured the ticket system yet.")
 
     else: 
-        embed = discord.Embed(title="Ticket system Configurations", color=discord.Color.dark_purple())
+        embed = discord.Embed(title="Ticket system Configurations", color=discord.Colour.dark_purple())
         embed.description =f"**Reaction Message ID** : {msg_id}\n"
         embed.description += f"**Ticket Category ID : {category_id}\n\n"
 
@@ -248,77 +240,12 @@ async def meme(ctx, subred = "memes"):
     name = random_sub.title
     url = random_sub.url
 
-    em = discord.Embed(title = name)
+    em = discord.Embed(title = name, color=discord.Colour.dark_purple())
 
     em.set_image(url = url)
 
     await ctx.send(embed = em)
         
-@bot.command(aliases=['c'])
-@commands.has_permissions(manage_messages = True)
-async def clear(ctx,amount=2):
-    await ctx.channel.purge(limit = amount)
-
-@bot.command(aliases=['k'])
-@commands.has_permissions(kick_members = True)
-async def kick(ctx,member : discord.Member,*,reason= "No reason given"):
-    await ctx.send(member.name + " has been kicked from the server, Because:"+reason)
-    await member.kick(reason=reason)
-
-@bot.command(aliases=['b'])
-@commands.has_permissions(ban_members = True)
-async def ban(ctx,member : discord.Member,*,reason= "No reason given"):
-    try:
-        await ctx.send(member.name + " has been banned from the server, Because:"+reason)
-    except:
-        await member.ban(reason=reason)
-
-    await member.kick(reason=reason)
-
-@bot.command(aliases=['ub'])
-@commands.has_permissions(ban_members=True)
-async def unban(ctx,*,member):
-    banned_users = await ctx.guild.bans()
-    member_name, member_disc = member.split('#')
-
-    for banned_entry in banned_users:
-        user = banned_entry.user
-
-        if(user.name, user.discriminator)==(member_name,member_disc):
-
-            await ctx.guild.unban(user)
-            await ctx.send(member_name +" has been unbanned!")
-            return
-
-    await ctx.send(member+" was not found")
-
-@bot.command(aliases=['m'])
-@commands.has_permissions(kick_members=True)
-async def mute(ctx,member : discord.Member):
-    muted_role = ctx.guild.get_role(814102587245985792)
-
-    await member.add_roles(muted_role)
-
-    await ctx.send(member.mention + " has been muted")
-
-@bot.command(aliases=['um'])
-@commands.has_permissions(kick_members=True)
-async def unmute(ctx,member : discord.Member):
-    muted_role = ctx.guild.get_role(814102587245985792)
-
-    await member.remove_roles(muted_role)
-
-    await ctx.send(member.mention + " has been unmuted")
-
-@bot.command(aliases=['user','info'])
-@commands.has_permissions(kick_members=True)
-async def whois(ctx,member : discord.Member):
-    embed = discord.Embed(title = member.name , description = member.mention, color = discord.Colour.red())
-    embed.add_field(name = "ID", value= member.id , inline = True)
-    embed.set_thumbnail(url = member.avatar_url)
-    embed.set_footer(icon_url = ctx.author.avatar_url, text = f"Requested by {ctx.author.name}")
-    await ctx.send(embed=embed)
-
 @bot.command()
 @commands.has_permissions(kick_members=True)
 async def dm(ctx, user_id=None, *, args=None):
@@ -327,151 +254,21 @@ async def dm(ctx, user_id=None, *, args=None):
             target = await bot.fetch_user(user_id)
             await target.send(args)
 
-            await ctx.channel.send("'" + args + "' sent to: " + target.name)
+            em = discord.Embed(title = ":white_check_mark:"  '"' + args + '" sent to: '  + target.name, color = discord.Colour.dark_purple())
+            await ctx.channel.send(embed=em)
 
         except:
-            await ctx.channel.send("Sorry...I Couldn't dm the given user.")
-        
-
+            emb = discord.Embed(title = ':x: could not dm the given user', description = '*this could be beacause the user has their dms closed*', color = discord.Colour.dark_purple())
+            await ctx.channel.send(embed = emb)    
     else:
-        await ctx.channel.send("You didn't provide a user's id and/or a message.")
-
-@bot.command() 
-@commands.has_permissions(kick_members=True)
-async def dm_all(ctx, *, args=None):
-    if args != None:
-        members = ctx.guild.members 
-        for member in members:
-            try:
-                await member.send(args)
-                print("'" + args + "' sent to: " + member.name)
-
-            except:
-                print("Couldn't send '" + args + "' to " + member.name)
-
-    else:
-        await ctx.channel.send("You didn't provide the required arguments.")
-
-@help.command()
-async def Kick(ctx):
-
-    em = discord.Embed(title = "kick", description = "Kicks a member from the server", color = ctx.author.color)
-
-    em.add_field(name = "**Syntax**", value = ".kick <member> [reason]")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em) 
-
-@help.command()
-async def Ban(ctx):
-
-    em = discord.Embed(title = "ban", description = "Bans a member from the server", color = ctx.author.color)
-
-    em.add_field(name = "**Syntax**", value = ".ban <member> [reason]")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em) 
-
-@help.command()
-async def Clear(ctx):
-
-    em = discord.Embed(title = "clear", description = "Clears a certain amount of messages", color = ctx.author.color)
-
-    em.add_field(name = "**Syntax**", value = ".clear <amount of messages>")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em) 
-
-@help.command()
-async def Warn(ctx):
-
-    em = discord.Embed(title = "Warn", description = "Gives the member a warning", color = ctx.author.color)
-
-    em.add_field(name = "**Syntax**", value = ".warn <member>")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em) 
-
-@help.command()
-async def Warnings(ctx):
-
-    em = discord.Embed(title = "Warn", description = "Shows the warnings given to a member", color = ctx.author.color)
-
-    em.add_field(name = "**Syntax**", value = ".warn <member>")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em) 
-
-@help.command()
-async def Configure_ticket(ctx):
-
-    em = discord.Embed(title = "Configure_ticket", description = "Configures the ticket system", color = ctx.author.color)
-
-    em.add_field(name = "**Syntax**", value = ".configure_ticket <message id> <category id>")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em)
-
-@help.command()
-async def Mute(ctx):
-
-    em = discord.Embed(title = "Mute", description = "Mutes a member", color = ctx.author.color)
-
-    em.add_field(name = "**Syntax**", value = ".mute <member> [reason]")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em)
-
-@help.command()
-async def Unmute(ctx):
-
-    em = discord.Embed(title = "Unmute", description = "Unmutes a member", color = ctx.author.color)
-
-    em.add_field(name = "**Syntax**", value = ".unmute <member>")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em)
-
-@help.command()
-async def Unban(ctx):
-
-    em = discord.Embed(title = "Unbans", description = "Unbans a member from the server", color = ctx.author.color)
-
-    em.add_field(name = "**Syntax**", value = ".unban <member id>")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em)
-
-@help.command()
-async def Whois(ctx):
-
-    em = discord.Embed(title = "Whois", description = "Gives information about a member", color = ctx.author.color)
-
-    em.add_field(name = "**Syntax**", value = ".whois <member>")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em)
-
-@help.command()
-async def Dm(ctx):
-
-    em = discord.Embed(title = "Dm", description = "Dms a single member", color = ctx.author.color)
-
-    em.add_field(name = "**Syntax**", value = ".dm <member id> [context of dm]")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em)
-
-@help.command()
-async def Dm_all(ctx):
-
-    em = discord.Embed(title = "Dm_all", description = "Dms every member in the server", color = ctx.author.color)
-
-    em.add_field(name = "**Syntax**", value = ".dm_all [context of dm]")
-    em.set_thumbnail(url="https://cdn.discordapp.com/attachments/733639347621855232/829739720811610173/WhatsApp_Image_2021-04-08_at_8.38.39_PM.jpg")
-
-    await ctx.send(embed = em)
+        embed = discord.Embed(title = ':x: wrong syntax', description = '*use .help dm to view the syntax*', color = discord.Colour.dark_purple())
+        await ctx.channel.send(embed=embed)
 
 
+
+bot.load_extension('cogs.events')
+bot.load_extension('cogs.Help')
+bot.load_extension('cogs.admin')
+bot.load_extension('cogs.misc')
 keep_alive()
 bot.run("Your bot token")
