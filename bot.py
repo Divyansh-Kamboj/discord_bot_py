@@ -116,9 +116,6 @@ async def on_message(msg):
                 await msg.delete()
                 break
     
-    if msg.content == "forby":
-        forby = msg.content
-        await msg.channel.send(str(forby+" is gae"))
 
     if '@' == msg.content[0] and 'e' == msg.content[-1]:
         em = discord.Embed(title="stop pinging!! :anger:", color=discord.Colour.dark_purple())
